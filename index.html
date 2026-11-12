@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IB Transfer - 向其他用户转账（最近转账）</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: #f5f5f5;
+      color: #1e1e1e;
+      line-height: 1.5;
+    }
+
+    /* ── Tabs ── */
+    .tabs {
+      display: flex;
+      gap: 32px;
+      padding: 0 40px;
+      border-bottom: 1px solid #e5e5e5;
+      background: #fff;
+    }
+    .tabs__item {
+      padding: 16px 0;
+      font-size: 15px;
+      color: #999;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all .2s;
+    }
+    .tabs__item:hover { color: #333; }
+    .tabs__item.active {
+      color: #1e1e1e;
+      font-weight: 600;
+      border-bottom-color: #1e1e1e;
+    }
+
+    /* ── Page layout ── */
+    .page { max-width: 1200px; margin: 0 auto; padding: 32px 40px; }
+    .layout { display: flex; gap: 24px; }
+    .layout__left { flex: 1; max-width: 600px; }
+    .layout__right { width: 420px; flex-shrink: 0; }
+
+    /* ── Section ── */
+    .section-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+
+    /* ── Form ── */
+    .form-item { margin-bottom: 24px; }
+    .form-item__label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 14px;
+      font-weight: 500;
+      color: #666;
+      margin-bottom: 8px;
+    }
+    .form-item__label-text.required::before {
+      content: '* ';
+      color: #e53935;
+    }
+
+    .input, .select {
+      width: 100%;
+      height: 44px;
+      padding: 0 12px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 14px;
+      color: #1e1e1e;
+      background: #fff;
+      outline: none;
+      transition: border-color .2s;
+    }
+    .input:focus, .select:focus { border-color: #1e1e1e; }
+    .input::placeholder { color: #bbb; }
+    .input:disabled, .select:disabled {
+      background: #fafafa;
+      color: #999;
+      cursor: not-allowed;
+    }
+
+    .select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 32px;
+      cursor: pointer;
+    }
+
+    .textarea {
+      width: 100%;
+      min-height: 44px;
+      padding: 10px 12px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      color: #1e1e1e;
+      outline: none;
+      resize: none;
+      transition: border-color .2s;
+    }
+    .textarea:focus { border-color: #1e1e1e; }
+
+    /* ── Account info row ── */
+    .account-info {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      padding: 14px 16px;
+      background: #f9f9f9;
+      border-radius: 10px;
+      margin-bottom: 24px;
+    }
+    .account-info__label {
+      font-size: 13px;
+      color: #999;
+      margin-bottom: 4px;
+    }
+    .account-info__value {
+      font-size: 14px;
+      font-weight: 500;
+      color: #1e1e1e;
+    }
+
+    /* ── Amount row ── */
+    .amount-row {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+    }
+    .amount-row .form-item { flex: 1; }
+    .add-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 0 16px;
+      height: 44px;
+      margin-top: 28px;
+      font-size: 14px;
+      color: #1e1e1e;
+      background: none;
+      border: none;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: color .2s;
+    }
+    .add-btn:hover { color: #555; }
+    .add-btn:disabled { color: #ccc; cursor: not-allowed; }
+
+    /* ── Upload area ── */
+    .upload-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .upload-label {
+      font-size: 14px;
+      font-weight: 500;
+      color: #666;
+      margin-bottom: 12px;
+    }
+    .download-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 14px;
+      color: #1e1e1e;
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+    .download-btn:hover { text-decoration: underline; }
+    .upload-area {
+      width: 100%;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px dashed #ddd;
+      border-radius: 10px;
+      cursor: pointer;
+      margin-bottom: 24px;
+      font-size: 20px;
+      color: #999;
+      transition: border-color .2s;
+    }
+    .upload-area:hover { border-color: #999; }
+
+    /* ── Verification code ── */
+    .verify-row {
+      display: flex;
+      gap: 12px;
+    }
+    .verify-row .input { flex: 1; }
+    .verify-btn {
+      height: 44px;
+      padding: 0 16px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #1e1e1e;
+      background: none;
+      border: none;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .verify-btn:hover { text-decoration: underline; }
+
+    /* ── Right panel ── */
+    .summary-panel {
+      border: 1px solid #e5e5e5;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .summary-panel__header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 24px;
+      border-bottom: 1px solid #e5e5e5;
+    }
+    .summary-panel__label {
+      font-size: 16px;
+      font-weight: 600;
+    }
+    .summary-panel__amount {
+      font-size: 24px;
+      font-weight: 700;
+    }
+    .summary-panel__currency {
+      font-size: 16px;
+      font-weight: 400;
+      margin-left: 4px;
+    }
+    .summary-panel__body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 400px;
+      color: #ccc;
+    }
+    .summary-panel__empty-icon {
+      width: 80px;
+      height: 80px;
+      margin-bottom: 12px;
+      background: #f5f5f5;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+    }
+    .summary-panel__empty-text {
+      font-size: 14px;
+      color: #bbb;
+    }
+
+    /* ── Transfer list item ── */
+    .transfer-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 24px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .transfer-item:last-child { border-bottom: none; }
+    .transfer-item__type {
+      display: inline-block;
+      padding: 2px 6px;
+      font-size: 12px;
+      font-weight: 700;
+      background: #f5f5f5;
+      border-radius: 3px;
+      margin-right: 8px;
+    }
+    .transfer-item__account { font-size: 14px; font-weight: 500; }
+    .transfer-item__amount { font-size: 18px; font-weight: 700; margin: 6px 0; }
+    .transfer-item__amount-currency { font-size: 13px; font-weight: 400; color: #666; margin-left: 4px; }
+    .transfer-item__name { font-size: 13px; color: #999; }
+    .transfer-item__delete {
+      cursor: pointer;
+      color: #ccc;
+      font-size: 18px;
+      transition: color .2s;
+    }
+    .transfer-item__delete:hover { color: #e53935; }
+
+    /* ══════════════════════════════════
+       ★ 最近转账入口（账户标签旁小链接）
+       ══════════════════════════════════ */
+    .frequent-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 13px;
+      font-weight: 400;
+      color: #1677ff;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      transition: color .15s;
+    }
+    .frequent-link:hover {
+      color: #0958d9;
+      text-decoration: underline;
+    }
+    .frequent-link__icon {
+      display: inline-flex;
+      width: 14px;
+      height: 14px;
+    }
+
+    /* ── Modal ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.45);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal {
+      width: 600px;
+      max-height: 80vh;
+      background: #fff;
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 20px 60px rgba(0,0,0,.15);
+      animation: modalIn .2s ease;
+    }
+    @keyframes modalIn {
+      from { opacity: 0; transform: translateY(20px) scale(.97); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .modal__header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 24px 16px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .modal__title { font-size: 18px; font-weight: 700; }
+    .modal__close {
+      width: 32px; height: 32px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+      color: #999;
+      cursor: pointer;
+      border-radius: 8px;
+      border: none;
+      background: none;
+      transition: all .15s;
+    }
+    .modal__close:hover { background: #f5f5f5; color: #333; }
+
+    .modal__search {
+      padding: 16px 24px 0;
+    }
+    .modal__search .input {
+      padding-left: 36px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23bbb' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: 12px center;
+    }
+
+    .modal__list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 24px;
+      max-height: 420px;
+    }
+    .modal__item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background .15s;
+    }
+    .modal__item:hover { background: #f9f9f9; }
+    .modal__item.selected { background: rgba(22,119,255,.04); }
+
+    .modal__item.already {
+      opacity: .45;
+      cursor: default;
+    }
+
+    .modal__item-info { flex: 1; }
+    .modal__item-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 2px;
+    }
+    .modal__item-account { font-size: 14px; font-weight: 600; }
+    .modal__item-type {
+      font-size: 11px;
+      padding: 2px 6px;
+      background: #f0f0f0;
+      border-radius: 4px;
+      color: #666;
+    }
+    .modal__item-currency {
+      font-size: 12px;
+      padding: 2px 6px;
+      background: #f0f0f0;
+      border-radius: 4px;
+      color: #666;
+    }
+    .modal__item-name { font-size: 13px; color: #999; }
+
+
+    /* ── Submit area ── */
+    .submit-area { margin-top: 24px; max-width: 600px; }
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 20px;
+      font-size: 14px;
+      color: #666;
+      cursor: pointer;
+    }
+    .checkbox-row input { width: 16px; height: 16px; accent-color: #1e1e1e; }
+    .submit-btn {
+      width: 100%;
+      height: 48px;
+      font-size: 16px;
+      font-weight: 600;
+      background: #1e1e1e;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background .2s;
+    }
+    .submit-btn:hover { background: #333; }
+    .submit-btn:disabled { background: #ccc; cursor: not-allowed; }
+
+    /* ── Responsive ── */
+    @media (max-width: 860px) {
+      .layout { flex-direction: column; }
+      .layout__left, .layout__right { max-width: 100%; width: 100%; }
+      .tabs { padding: 0 20px; gap: 24px; }
+      .page { padding: 20px; }
+      .modal { width: calc(100vw - 32px); margin: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Tabs ── -->
+  <div class="tabs">
+    <div class="tabs__item">向我的账户转账</div>
+    <div class="tabs__item active">向其他用户转账</div>
+  </div>
+
+  <div class="page">
+    <div class="layout">
+
+      <!-- ══════ Left: Form ══════ -->
+      <section class="layout__left">
+
+        <!-- FROM -->
+        <h3 class="section-title">表单</h3>
+        <div class="form-item">
+          <label class="form-item__label">
+            <span class="form-item__label-text required">返佣账户</span>
+          </label>
+          <select class="select" id="rebateAccount">
+            <option value="9730895">9730895 – 0.14 USD</option>
+            <option value="8821034">8821034 – 520.00 USD</option>
+          </select>
+        </div>
+
+        <!-- TO -->
+        <div class="upload-header">
+          <h3 class="section-title" style="margin-bottom:0">转入</h3>
+          <button class="download-btn">⬇ 下载模板</button>
+        </div>
+        <p class="upload-label">批量上传</p>
+        <div class="upload-area">+</div>
+
+        <!-- Account input — 最近转账入口在 label 右侧 -->
+        <div class="form-item">
+          <label class="form-item__label">
+            <span class="form-item__label-text required">账户</span>
+            <button class="frequent-link" onclick="openModal()">
+              <svg class="frequent-link__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+              最近转账
+            </button>
+          </label>
+          <input class="input" id="accountInput" type="text" placeholder="请输入" maxlength="12" />
+        </div>
+        <div class="account-info">
+          <div>
+            <div class="account-info__label">账户类型</div>
+            <div class="account-info__value" id="infoType">--</div>
+          </div>
+          <div>
+            <div class="account-info__label">账户名称</div>
+            <div class="account-info__value" id="infoName">--</div>
+          </div>
+          <div>
+            <div class="account-info__label">货币</div>
+            <div class="account-info__value" id="infoCurrency">--</div>
+          </div>
+        </div>
+
+        <!-- Amount -->
+        <div class="amount-row">
+          <div class="form-item">
+            <label class="form-item__label">
+              <span class="form-item__label-text required">金额</span>
+            </label>
+            <input class="input" id="amountInput" type="text" placeholder="请输入" />
+          </div>
+          <button class="add-btn" id="addBtn" onclick="addTransfer()">＋ 添加转账</button>
+        </div>
+
+        <!-- Notes -->
+        <div class="form-item">
+          <label class="form-item__label">
+            <span class="form-item__label-text">申请备注</span>
+          </label>
+          <textarea class="textarea" rows="1" placeholder="请输入"></textarea>
+        </div>
+
+        <!-- Verification code -->
+        <div class="form-item">
+          <label class="form-item__label">
+            <span class="form-item__label-text required">输入验证码</span>
+          </label>
+          <div class="verify-row">
+            <input class="input" type="text" placeholder="请输入" />
+            <button class="verify-btn">发送验证码</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════ Right: Summary ══════ -->
+      <section class="layout__right">
+        <div class="summary-panel">
+          <div class="summary-panel__header">
+            <span class="summary-panel__label">总金额</span>
+            <span class="summary-panel__amount">
+              <span id="totalAmount">0.00</span>
+              <span class="summary-panel__currency">USD</span>
+            </span>
+          </div>
+          <div class="summary-panel__body" id="transferList">
+            <div class="summary-panel__empty-icon">📋</div>
+            <div class="summary-panel__empty-text">无数据</div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Submit -->
+    <div class="submit-area">
+      <label class="checkbox-row">
+        <input type="checkbox" id="checkConfirm" />
+        我已确认以上信息无误
+      </label>
+      <button class="submit-btn" id="submitBtn" disabled>提交</button>
+    </div>
+  </div>
+
+  <!-- ══════ 最近转账弹窗 ══════ -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <div class="modal__header">
+        <span class="modal__title">最近转账</span>
+        <button class="modal__close" onclick="closeModal()">✕</button>
+      </div>
+      <div class="modal__search">
+        <input class="input" id="modalSearch" type="text" placeholder="搜索账户号或名称" oninput="filterModalList()" />
+      </div>
+      <div class="modal__list" id="modalList"></div>
+    </div>
+  </div>
+
+<script>
+const ALL_FREQUENT_ACCOUNTS = [
+  { account: '7217693', accountName: 'John Smith', accountType: 1, accountCurrency: 'USD' },
+  { account: '8345612', accountName: 'Mike Chen', accountType: 1, accountCurrency: 'USD' },
+  { account: '9012345', accountName: 'Sarah Wang', accountType: 3, accountCurrency: 'USC' },
+  { account: '6128734', accountName: 'David Li', accountType: 1, accountCurrency: 'USD' },
+  { account: '5534291', accountName: 'Emma Zhang', accountType: 1, accountCurrency: 'USD' },
+  { account: '4429013', accountName: 'Tom Wilson', accountType: 3, accountCurrency: 'USD' },
+  { account: '3318756', accountName: 'Lucy Liu', accountType: 1, accountCurrency: 'USC' },
+  { account: '2207489', accountName: 'James Brown', accountType: 1, accountCurrency: 'USD' },
+  { account: '1196222', accountName: 'Anna Lee', accountType: 1, accountCurrency: 'USD' },
+  { account: '8085955', accountName: 'Peter Tan', accountType: 3, accountCurrency: 'USD' },
+  { account: '7074688', accountName: 'Grace Ng', accountType: 1, accountCurrency: 'USC' },
+  { account: '6063421', accountName: 'Kevin Wu', accountType: 1, accountCurrency: 'USD' },
+  { account: '5052154', accountName: 'Mary Xu', accountType: 1, accountCurrency: 'USD' },
+  { account: '4040887', accountName: 'Jack Ma', accountType: 1, accountCurrency: 'USD' },
+  { account: '3039620', accountName: 'Helen Zhao', accountType: 3, accountCurrency: 'USC' },
+  { account: '2028353', accountName: 'Ryan Huang', accountType: 1, accountCurrency: 'USD' },
+  { account: '1017086', accountName: 'Linda Gao', accountType: 1, accountCurrency: 'USD' },
+  { account: '9905819', accountName: 'Frank Zhu', accountType: 1, accountCurrency: 'USD' },
+  { account: '8894552', accountName: 'Cathy Feng', accountType: 3, accountCurrency: 'USD' },
+  { account: '7783285', accountName: 'Alex Jiang', accountType: 1, accountCurrency: 'USC' },
+  { account: '6672018', accountName: 'Tony Deng', accountType: 1, accountCurrency: 'USD' },
+  { account: '5560751', accountName: 'Sophie Luo', accountType: 1, accountCurrency: 'USD' },
+  { account: '4449484', accountName: 'Leo Pan', accountType: 1, accountCurrency: 'USD' },
+  { account: '3338217', accountName: 'Wendy Sun', accountType: 3, accountCurrency: 'USC' },
+  { account: '2226950', accountName: 'Steven Ye', accountType: 1, accountCurrency: 'USD' },
+  { account: '1115683', accountName: 'Diana Xie', accountType: 1, accountCurrency: 'USD' },
+  { account: '9004416', accountName: 'Brian Qian', accountType: 1, accountCurrency: 'USD' },
+  { account: '8993149', accountName: 'Ivy Zhong', accountType: 3, accountCurrency: 'USD' },
+  { account: '7881882', accountName: 'Chris Han', accountType: 1, accountCurrency: 'USC' },
+  { account: '6770615', accountName: 'Fiona Wei', accountType: 1, accountCurrency: 'USD' },
+]
+
+const accountTypeMap = { 1: '交易账户', 3: '返佣账户' }
+let transfers = []
+
+function selectAccount(accountId) {
+  const acc = ALL_FREQUENT_ACCOUNTS.find(a => a.account === accountId)
+  if (!acc) return
+  document.getElementById('accountInput').value = acc.account
+  document.getElementById('infoType').textContent = accountTypeMap[acc.accountType] || '--'
+  document.getElementById('infoName').textContent = acc.accountName
+  document.getElementById('infoCurrency').textContent = acc.accountCurrency
+  closeModal()
+}
+
+// ── Add transfer to list ──
+function addTransfer() {
+  const account = document.getElementById('accountInput').value.trim()
+  const amount = document.getElementById('amountInput').value.trim()
+  const name = document.getElementById('infoName').textContent
+  const type = document.getElementById('infoType').textContent
+  const currency = document.getElementById('infoCurrency').textContent
+
+  if (!account || !amount || amount === '0' || name === '--') return
+
+  if (transfers.some(t => t.account === account)) {
+    alert('该账户已添加')
+    return
+  }
+
+  transfers.push({ account, amount: parseFloat(amount).toFixed(2), name, type, currency })
+  renderTransferList()
+
+  document.getElementById('accountInput').value = ''
+  document.getElementById('amountInput').value = ''
+  document.getElementById('infoType').textContent = '--'
+  document.getElementById('infoName').textContent = '--'
+  document.getElementById('infoCurrency').textContent = '--'
+}
+
+function removeTransfer(idx) {
+  transfers.splice(idx, 1)
+  renderTransferList()
+}
+
+function renderTransferList() {
+  const list = document.getElementById('transferList')
+  const total = transfers.reduce((sum, t) => sum + parseFloat(t.amount), 0)
+  document.getElementById('totalAmount').textContent = total.toFixed(2)
+
+  if (transfers.length === 0) {
+    list.innerHTML = `
+      <div class="summary-panel__empty-icon">📋</div>
+      <div class="summary-panel__empty-text">无数据</div>`
+    list.style.justifyContent = 'center'
+    return
+  }
+
+  list.style.justifyContent = 'flex-start'
+  list.style.alignItems = 'stretch'
+  list.innerHTML = transfers.map((t, i) => `
+    <div class="transfer-item">
+      <div>
+        <div><span class="transfer-item__type">${t.type}</span><span class="transfer-item__account">${t.account}</span></div>
+        <div class="transfer-item__amount">${parseFloat(t.amount).toLocaleString('en', { minimumFractionDigits: 2 })}<span class="transfer-item__amount-currency">${t.currency}</span></div>
+        <div class="transfer-item__name">${t.name}</div>
+      </div>
+      <span class="transfer-item__delete" onclick="removeTransfer(${i})">🗑</span>
+    </div>
+  `).join('')
+}
+
+// ── Modal ──
+function openModal() {
+  document.getElementById('modalSearch').value = ''
+  renderModalList(ALL_FREQUENT_ACCOUNTS)
+  document.getElementById('modalOverlay').classList.add('active')
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('active')
+}
+
+function filterModalList() {
+  const q = document.getElementById('modalSearch').value.toLowerCase()
+  const filtered = ALL_FREQUENT_ACCOUNTS.filter(a =>
+    a.account.includes(q) || a.accountName.toLowerCase().includes(q)
+  )
+  renderModalList(filtered)
+}
+
+function renderModalList(list) {
+  const container = document.getElementById('modalList')
+  const isSearching = document.getElementById('modalSearch').value.trim() !== ''
+  if (list.length === 0) {
+    const emptyMsg = isSearching ? '无匹配结果' : '暂无最近转账记录'
+    container.innerHTML = `<div style="text-align:center;padding:60px 0;color:#bbb;">
+      <div style="font-size:40px;margin-bottom:12px;opacity:.5;">📋</div>
+      <div style="font-size:14px;">${emptyMsg}</div>
+    </div>`
+    return
+  }
+  container.innerHTML = list.map(acc => {
+    const alreadyAdded = transfers.some(t => t.account === acc.account)
+    return `
+      <div class="modal__item ${alreadyAdded ? 'already' : ''}"
+           onclick="${alreadyAdded ? '' : `selectAccount('${acc.account}')`}">
+        <div class="modal__item-info">
+          <div class="modal__item-header">
+            <span class="modal__item-account">${acc.account}</span>
+            <span class="modal__item-type">${accountTypeMap[acc.accountType]}</span>
+            <span class="modal__item-currency">${acc.accountCurrency}</span>
+          </div>
+          <span class="modal__item-name">${acc.accountName}${alreadyAdded ? ' (已添加)' : ''}</span>
+        </div>
+      </div>`
+  }).join('')
+}
+
+// ── Checkbox → Submit ──
+document.getElementById('checkConfirm').addEventListener('change', function() {
+  document.getElementById('submitBtn').disabled = !this.checked || transfers.length === 0
+})
+
+// close modal on overlay click
+document.getElementById('modalOverlay').addEventListener('click', function(e) {
+  if (e.target === this) closeModal()
+})
+</script>
+</body>
+</html>
