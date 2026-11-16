@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>IB Transfer - 向其他用户转账（最近转账）</title>
+  <title>Transfer Rebate - Transfer Rebate To Others (Recent Transfers)</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -295,9 +295,7 @@
     }
     .transfer-item__delete:hover { color: #e53935; }
 
-    /* ══════════════════════════════════
-       ★ 最近转账入口（账户标签旁小链接）
-       ══════════════════════════════════ */
+    /* ── Recent Transfers link ── */
     .frequent-link {
       display: inline-flex;
       align-items: center;
@@ -394,7 +392,6 @@
     }
     .modal__item:hover { background: #f9f9f9; }
     .modal__item.selected { background: rgba(22,119,255,.04); }
-
     .modal__item.already {
       opacity: .45;
       cursor: default;
@@ -424,19 +421,18 @@
     }
     .modal__item-name { font-size: 13px; color: #999; }
 
-
     /* ── Submit area ── */
     .submit-area { margin-top: 24px; max-width: 600px; }
     .checkbox-row {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       gap: 8px;
       margin-bottom: 20px;
       font-size: 14px;
       color: #666;
       cursor: pointer;
     }
-    .checkbox-row input { width: 16px; height: 16px; accent-color: #1e1e1e; }
+    .checkbox-row input { width: 16px; height: 16px; accent-color: #1e1e1e; margin-top: 2px; flex-shrink: 0; }
     .submit-btn {
       width: 100%;
       height: 48px;
@@ -466,8 +462,8 @@
 
   <!-- ── Tabs ── -->
   <div class="tabs">
-    <div class="tabs__item">向我的账户转账</div>
-    <div class="tabs__item active">向其他用户转账</div>
+    <div class="tabs__item">Transfer Rebate To Your Account</div>
+    <div class="tabs__item active">Transfer Rebate To Others</div>
   </div>
 
   <div class="page">
@@ -477,29 +473,29 @@
       <section class="layout__left">
 
         <!-- FROM -->
-        <h3 class="section-title">表单</h3>
+        <h3 class="section-title">Form</h3>
         <div class="form-item">
           <label class="form-item__label">
-            <span class="form-item__label-text required">返佣账户</span>
+            <span class="form-item__label-text required">Rebate Account</span>
           </label>
           <select class="select" id="rebateAccount">
-            <option value="9730895">9730895 – 0.14 USD</option>
-            <option value="8821034">8821034 – 520.00 USD</option>
+            <option value="9730661">9730661 - 21 USD</option>
+            <option value="8821034">8821034 - 520.00 USD</option>
           </select>
         </div>
 
         <!-- TO -->
         <div class="upload-header">
-          <h3 class="section-title" style="margin-bottom:0">转入</h3>
-          <button class="download-btn">⬇ 下载模板</button>
+          <h3 class="section-title" style="margin-bottom:0">To</h3>
+          <button class="download-btn">⬇ Download Template</button>
         </div>
-        <p class="upload-label">批量上传</p>
+        <p class="upload-label">Bulk Upload</p>
         <div class="upload-area">+</div>
 
-        <!-- Account input — 最近转账入口在 label 右侧 -->
+        <!-- Account input -->
         <div class="form-item">
           <label class="form-item__label">
-            <span class="form-item__label-text required">账户</span>
+            <span class="form-item__label-text required">Account</span>
             <button class="frequent-link" onclick="openModal()">
               <svg class="frequent-link__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
@@ -507,22 +503,22 @@
                 <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
                 <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
               </svg>
-              最近转账
+              Recent Transfers
             </button>
           </label>
-          <input class="input" id="accountInput" type="text" placeholder="请输入" maxlength="12" />
+          <input class="input" id="accountInput" type="text" placeholder="Please Enter" maxlength="12" />
         </div>
         <div class="account-info">
           <div>
-            <div class="account-info__label">账户类型</div>
+            <div class="account-info__label">Account Type</div>
             <div class="account-info__value" id="infoType">--</div>
           </div>
           <div>
-            <div class="account-info__label">账户名称</div>
+            <div class="account-info__label">Account Name</div>
             <div class="account-info__value" id="infoName">--</div>
           </div>
           <div>
-            <div class="account-info__label">货币</div>
+            <div class="account-info__label">Currency</div>
             <div class="account-info__value" id="infoCurrency">--</div>
           </div>
         </div>
@@ -531,29 +527,29 @@
         <div class="amount-row">
           <div class="form-item">
             <label class="form-item__label">
-              <span class="form-item__label-text required">金额</span>
+              <span class="form-item__label-text required">Amount</span>
             </label>
-            <input class="input" id="amountInput" type="text" placeholder="请输入" />
+            <input class="input" id="amountInput" type="text" placeholder="Please Enter" />
           </div>
-          <button class="add-btn" id="addBtn" onclick="addTransfer()">＋ 添加转账</button>
+          <button class="add-btn" id="addBtn" onclick="addTransfer()">+ Add Transaction</button>
         </div>
 
         <!-- Notes -->
         <div class="form-item">
           <label class="form-item__label">
-            <span class="form-item__label-text">申请备注</span>
+            <span class="form-item__label-text">Application Notes</span>
           </label>
-          <textarea class="textarea" rows="1" placeholder="请输入"></textarea>
+          <textarea class="textarea" rows="1" placeholder="Please Enter"></textarea>
         </div>
 
         <!-- Verification code -->
         <div class="form-item">
           <label class="form-item__label">
-            <span class="form-item__label-text required">输入验证码</span>
+            <span class="form-item__label-text required">Enter Verification Code</span>
           </label>
           <div class="verify-row">
-            <input class="input" type="text" placeholder="请输入" />
-            <button class="verify-btn">发送验证码</button>
+            <input class="input" type="text" placeholder="Please Enter" />
+            <button class="verify-btn">Send Code</button>
           </div>
         </div>
       </section>
@@ -562,7 +558,7 @@
       <section class="layout__right">
         <div class="summary-panel">
           <div class="summary-panel__header">
-            <span class="summary-panel__label">总金额</span>
+            <span class="summary-panel__label">Total Amount</span>
             <span class="summary-panel__amount">
               <span id="totalAmount">0.00</span>
               <span class="summary-panel__currency">USD</span>
@@ -570,7 +566,7 @@
           </div>
           <div class="summary-panel__body" id="transferList">
             <div class="summary-panel__empty-icon">📋</div>
-            <div class="summary-panel__empty-text">无数据</div>
+            <div class="summary-panel__empty-text">No Data</div>
           </div>
         </div>
       </section>
@@ -580,21 +576,21 @@
     <div class="submit-area">
       <label class="checkbox-row">
         <input type="checkbox" id="checkConfirm" />
-        我已确认以上信息无误
+        I agree: please check the transfer information carefully, the operation cannot be rolled back, you will take losses caused by the wrong transfer.
       </label>
-      <button class="submit-btn" id="submitBtn" disabled>提交</button>
+      <button class="submit-btn" id="submitBtn" disabled>Submit</button>
     </div>
   </div>
 
-  <!-- ══════ 最近转账弹窗 ══════ -->
+  <!-- ══════ Recent Transfers Modal ══════ -->
   <div class="modal-overlay" id="modalOverlay">
     <div class="modal">
       <div class="modal__header">
-        <span class="modal__title">最近转账</span>
+        <span class="modal__title">Recent Transfers</span>
         <button class="modal__close" onclick="closeModal()">✕</button>
       </div>
       <div class="modal__search">
-        <input class="input" id="modalSearch" type="text" placeholder="搜索账户号或名称" oninput="filterModalList()" />
+        <input class="input" id="modalSearch" type="text" placeholder="Search by account number or name" oninput="filterModalList()" />
       </div>
       <div class="modal__list" id="modalList"></div>
     </div>
@@ -602,7 +598,7 @@
 
 <script>
 const ALL_FREQUENT_ACCOUNTS = [
-  { account: '7217693', accountName: 'John Smith', accountType: 1, accountCurrency: 'USD' },
+  { account: '19609067', accountName: 'Lucy Wang', accountType: 1, accountCurrency: 'USD' },
   { account: '8345612', accountName: 'Mike Chen', accountType: 1, accountCurrency: 'USD' },
   { account: '9012345', accountName: 'Sarah Wang', accountType: 3, accountCurrency: 'USC' },
   { account: '6128734', accountName: 'David Li', accountType: 1, accountCurrency: 'USD' },
@@ -634,7 +630,7 @@ const ALL_FREQUENT_ACCOUNTS = [
   { account: '6770615', accountName: 'Fiona Wei', accountType: 1, accountCurrency: 'USD' },
 ]
 
-const accountTypeMap = { 1: '交易账户', 3: '返佣账户' }
+const accountTypeMap = { 1: 'Trading Account', 3: 'Rebate Account' }
 let transfers = []
 
 function selectAccount(accountId) {
@@ -647,7 +643,6 @@ function selectAccount(accountId) {
   closeModal()
 }
 
-// ── Add transfer to list ──
 function addTransfer() {
   const account = document.getElementById('accountInput').value.trim()
   const amount = document.getElementById('amountInput').value.trim()
@@ -658,7 +653,7 @@ function addTransfer() {
   if (!account || !amount || amount === '0' || name === '--') return
 
   if (transfers.some(t => t.account === account)) {
-    alert('该账户已添加')
+    alert('This account has already been added')
     return
   }
 
@@ -680,12 +675,12 @@ function removeTransfer(idx) {
 function renderTransferList() {
   const list = document.getElementById('transferList')
   const total = transfers.reduce((sum, t) => sum + parseFloat(t.amount), 0)
-  document.getElementById('totalAmount').textContent = total.toFixed(2)
+  document.getElementById('totalAmount').textContent = total.toLocaleString('en', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 
   if (transfers.length === 0) {
     list.innerHTML = `
       <div class="summary-panel__empty-icon">📋</div>
-      <div class="summary-panel__empty-text">无数据</div>`
+      <div class="summary-panel__empty-text">No Data</div>`
     list.style.justifyContent = 'center'
     return
   }
@@ -727,7 +722,7 @@ function renderModalList(list) {
   const container = document.getElementById('modalList')
   const isSearching = document.getElementById('modalSearch').value.trim() !== ''
   if (list.length === 0) {
-    const emptyMsg = isSearching ? '无匹配结果' : '暂无最近转账记录'
+    const emptyMsg = isSearching ? 'No matching results' : 'No recent transfer records'
     container.innerHTML = `<div style="text-align:center;padding:60px 0;color:#bbb;">
       <div style="font-size:40px;margin-bottom:12px;opacity:.5;">📋</div>
       <div style="font-size:14px;">${emptyMsg}</div>
@@ -745,18 +740,16 @@ function renderModalList(list) {
             <span class="modal__item-type">${accountTypeMap[acc.accountType]}</span>
             <span class="modal__item-currency">${acc.accountCurrency}</span>
           </div>
-          <span class="modal__item-name">${acc.accountName}${alreadyAdded ? ' (已添加)' : ''}</span>
+          <span class="modal__item-name">${acc.accountName}${alreadyAdded ? ' (Added)' : ''}</span>
         </div>
       </div>`
   }).join('')
 }
 
-// ── Checkbox → Submit ──
 document.getElementById('checkConfirm').addEventListener('change', function() {
   document.getElementById('submitBtn').disabled = !this.checked || transfers.length === 0
 })
 
-// close modal on overlay click
 document.getElementById('modalOverlay').addEventListener('click', function(e) {
   if (e.target === this) closeModal()
 })
